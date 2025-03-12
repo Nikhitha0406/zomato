@@ -77,23 +77,27 @@ sns.countplot(x=df['sentiment'], hue=df['sentiment'], palette='viridis', legend=
 plt.title("Sentiment Distribution of Zomato Reviews")
 plt.show(block=True)
 
-# Word Cloud
-# Word Cloud
 def generate_wordcloud(sentiment):
     text = ' '.join(df[df['sentiment'] == sentiment]['cleaned_review'])
-    
-    # Check if there's enough text to generate a word cloud
-    if not text.strip():
+
+    # Ensure there's meaningful text before generating the word cloud
+    if len(text.strip()) == 0:
         print(f"Warning: No {sentiment} reviews available for word cloud.")
         return
 
     try:
         wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+
+        if len(wordcloud.words_) == 0:  # Ensure wordcloud contains words
+            print(f"Warning: WordCloud for {sentiment} has no words.")
+            return
+
         plt.figure(figsize=(10, 5))
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.axis("off")
         plt.title(f"{sentiment} Reviews Word Cloud")
         plt.show(block=True)
+
     except ValueError as e:
         print(f"Error generating word cloud for {sentiment}: {e}")
 
