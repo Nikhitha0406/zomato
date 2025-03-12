@@ -78,17 +78,24 @@ plt.title("Sentiment Distribution of Zomato Reviews")
 plt.show(block=True)
 
 # Word Cloud
+# Word Cloud
 def generate_wordcloud(sentiment):
     text = ' '.join(df[df['sentiment'] == sentiment]['cleaned_review'])
+    
+    # Check if there's enough text to generate a word cloud
     if not text.strip():
-        print(f"No {sentiment} reviews available for word cloud.")
+        print(f"Warning: No {sentiment} reviews available for word cloud.")
         return
-    wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
-    plt.figure(figsize=(10,5))
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis("off")
-    plt.title(f"{sentiment} Reviews Word Cloud")
-    plt.show(block=True)
+
+    try:
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+        plt.figure(figsize=(10, 5))
+        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.axis("off")
+        plt.title(f"{sentiment} Reviews Word Cloud")
+        plt.show(block=True)
+    except ValueError as e:
+        print(f"Error generating word cloud for {sentiment}: {e}")
 
 generate_wordcloud('Positive')
 generate_wordcloud('Negative')
