@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
+import streamlit as st  # Import Streamlit
 import joblib
 
 nltk.download('stopwords')
@@ -80,26 +81,26 @@ plt.show(block=True)
 def generate_wordcloud(sentiment):
     text = ' '.join(df[df['sentiment'] == sentiment]['cleaned_review'])
 
-    # Ensure there's meaningful text before generating the word cloud
     if len(text.strip()) == 0:
-        print(f"Warning: No {sentiment} reviews available for word cloud.")
+        st.warning(f"No {sentiment} reviews available for word cloud.")
         return
 
     try:
         wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
 
-        if len(wordcloud.words_) == 0:  # Ensure wordcloud contains words
-            print(f"Warning: WordCloud for {sentiment} has no words.")
+        if len(wordcloud.words_) == 0:
+            st.warning(f"WordCloud for {sentiment} has no words.")
             return
 
-        plt.figure(figsize=(10, 5))
-        plt.imshow(wordcloud, interpolation='bilinear')
-        plt.axis("off")
-        plt.title(f"{sentiment} Reviews Word Cloud")
-        plt.show(block=True)
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.imshow(wordcloud, interpolation='bilinear')
+        ax.axis("off")
+        ax.set_title(f"{sentiment} Reviews Word Cloud")
+        st.pyplot(fig)  # ✅ Use st.pyplot() instead of plt.show()
 
     except ValueError as e:
-        print(f"Error generating word cloud for {sentiment}: {e}")
+        st.error(f"Error generating word cloud for {sentiment}: {e}")
 
+st.subheader("Word Clouds for Zomato Reviews")
 generate_wordcloud('Positive')
 generate_wordcloud('Negative')
