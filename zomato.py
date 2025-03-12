@@ -18,21 +18,26 @@ stop_words = set(stopwords.words('english'))
 # Load Dataset
 file_path = "zomato_reviews.csv"
 df = pd.read_csv(file_path)
+print("Dataset Loaded Successfully")
+print(df.head())  # Debugging step
 
 # Drop unnecessary column
-df.drop(columns=['Unnamed: 0'], inplace=True)
+df.drop(columns=['Unnamed: 0'], inplace=True, errors='ignore')
 
 # Drop missing values
 df.dropna(inplace=True)
 
 def clean_text(text):
-    text = text.lower()  # Convert to lowercase
-    text = re.sub(r'\d+', '', text)  # Remove numbers
-    text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
-    text = ' '.join([word for word in text.split() if word not in stop_words])
-    return text
+    text = text.lower()
+    text = re.sub(r'\d+', '', text)
+    text = re.sub(r'[^\w\s]', '', text)
+    words = text.split()
+    if not words:
+        return "emptyreview"
+    return ' '.join([word for word in words if word not in stop_words])
 
 df['cleaned_review'] = df['review'].astype(str).apply(clean_text)
+print("Sample cleaned reviews:", df['cleaned_review'].head())
 
 # Assign labels based on rating
 def assign_sentiment(rating):
@@ -60,7 +65,7 @@ model.fit(X_train, y_train)
 # Evaluate Model
 y_pred = model.predict(X_test)
 print("Accuracy:", accuracy_score(y_test, y_pred))
-print(classification_report(y_test, y_pred))
+print(classification_report(y_test, y_pred, zero_division=1))  # Fix precision warning
 
 # Save Model & Vectorizer
 joblib.dump(model, 'sentiment_model.pkl')
@@ -68,19 +73,22 @@ joblib.dump(vectorizer, 'tfidf_vectorizer.pkl')
 
 # Visualization: Sentiment Distribution
 plt.figure(figsize=(8,5))
-sns.countplot(x=df['sentiment'], palette='viridis')
+sns.countplot(x=df['sentiment'], hue=df['sentiment'], palette='viridis', legend=False)  # Fix seaborn warning
 plt.title("Sentiment Distribution of Zomato Reviews")
-plt.show()
+plt.show(block=True)
 
 # Word Cloud
 def generate_wordcloud(sentiment):
     text = ' '.join(df[df['sentiment'] == sentiment]['cleaned_review'])
+    if not text.strip():
+        print(f"No {sentiment} reviews available for word cloud.")
+        return
     wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
     plt.figure(figsize=(10,5))
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis("off")
     plt.title(f"{sentiment} Reviews Word Cloud")
-    plt.show()
+    plt.show(block=True)
 
 generate_wordcloud('Positive')
 generate_wordcloud('Negative')
